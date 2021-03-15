@@ -1,0 +1,3 @@
+<div class="border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-500 border-red-300 text-red-700 hover:bg-red-100 focus:ring-red-500 border-yellow-300 text-yellow-700 hover:bg-yellow-100 focus:ring-yellow-500 border-green-300 text-green-700 hover:bg-green-100 focus:ring-green-500 border-blue-300 text-blue-700 hover:bg-blue-100 focus:ring-blue-500 border-indigo-300 text-indigo-700 hover:bg-indigo-100 focus:ring-indigo-500 border-purple-300 text-purple-700 hover:bg-purple-100 focus:ring-purple-500 border-pink-300 text-pink-700 hover:bg-pink-100 focus:ring-pink-500 ">
+    <!-- this is a stupid hack to make purge think that these colors are available so in production it doesnt remove them -->
+</div>
