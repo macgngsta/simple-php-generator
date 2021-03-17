@@ -50,9 +50,11 @@
 
                             <div class="col-span-6 sm:col-span-4">
                                 <x-form-group>
-                                    <x-form-checkbox name="is_constructor" label="Generate Constructor" default/>
-                                    <x-form-checkbox name="is_toarray" label="Generate ToArray"  default/>
-                                    <x-form-checkbox name="is_pascalcase" label="Force PascalCase on Functions" default/>
+                                    <x-form-checkbox name="is_constructor" label="Generate Constructor" checked="checked"/>
+                                    <x-form-checkbox name="is_toarray" label="Generate ToArray"  checked="checked"/>
+                                    <x-form-checkbox name="is_pascalcase" label="Force PascalCase on Functions" checked="checked"/>
+                                    <x-form-checkbox name="is_clone" label="Clone Function" checked="checked"/>
+                                    <x-form-checkbox name="is_convertjson" label="Function to Convert Json" checked="checked"/>
                                 </x-form-group>
                             </div>
                             <div class="col-span-6 sm:col-span-6">

@@ -30,6 +30,8 @@ class PhpHelper
     private $isConstructor;
     private $isToArray;
     private $isPascalCase;
+    private $isClone;
+    private $isConvertJson;
 
     public function __construct()
     {
@@ -39,6 +41,8 @@ class PhpHelper
         $this->isConstructor = true;
         $this->isToArray = true;
         $this->isPascalCase = true;
+        $this->isClone = true;
+        $this->isConvertJson = true;
     }
 
     public function getIndentCharacter()
@@ -101,6 +105,26 @@ class PhpHelper
         $this->isPascalCase = $isPascalCase;
     }
 
+    public function isClone()
+    {
+        return $this->isClone;
+    }
+
+    public function setIsClone($isClone)
+    {
+        $this->isClone = $isClone;
+    }
+
+    public function isConvertJson()
+    {
+        return $this->isConvertJson;
+    }
+
+    public function setIsConvertJson($isConvertJson)
+    {
+        $this->isConvertJson = $isConvertJson;
+    }
+
     //  --------------------------------------------------
 
     public function readCode($input)
@@ -117,11 +141,11 @@ class PhpHelper
             array_push($listToProcess, $name);
             //check to see if it contains commas
             //account for private $var1,$var2,$var3;
-            if(UtilityHelper::strContains($name,',')){
-                $listToProcess = explode(',',$name);
+            if (UtilityHelper::strContains($name, ',')) {
+                $listToProcess = explode(',', $name);
             }
 
-            foreach($listToProcess as $ex){
+            foreach ($listToProcess as $ex) {
                 $var = new VariableObject();
 
                 //remove the $
@@ -134,31 +158,28 @@ class PhpHelper
                 $parts = array();
 
                 //check what the current case is
-                if(UtilityHelper::strContains($cleaned, '_')){
+                if (UtilityHelper::strContains($cleaned, '_')) {
                     //snake case
                     $parts = explode('_', $cleaned);
-                }
-                else if(UtilityHelper::strContains($cleaned, '-')){
+                } else if (UtilityHelper::strContains($cleaned, '-')) {
                     //kebab case
                     $parts = explode('-', $cleaned);
-                }
-                else{
+                } else {
                     //we assume camel of pascal
                     $parts = preg_split("/((?<=[a-z])(?=[A-Z])|(?=[A-Z][a-z]))/", $cleaned);
                 }
 
-                if(strtolower($parts[0]) == 'is'){
+                if (strtolower($parts[0]) == 'is') {
                     $var->setIsBoolean(true);
                 }
 
-                if($this->isPascalCase){
+                if ($this->isPascalCase) {
                     $update = '';
-                    foreach($parts as $part){
-                        $update.=ucfirst($part);
+                    foreach ($parts as $part) {
+                        $update .= ucfirst($part);
                     }
                     $var->setFunctionName($update);
-                }
-                else{
+                } else {
                     $var->setFunctionName(ucfirst($cleaned));
                 }
 
@@ -176,60 +197,85 @@ class PhpHelper
     {
         $code = "";
 
-        if(!empty($listOfVariables)){
+        if (!empty($listOfVariables)) {
+            if ($this->isConstructor()) {
+                $code .= $this->handleIndent(1) . "public function __construct(){" . $this->newlineCharacter;
 
+                foreach ($listOfVariables as $variable) {
+                    $code .= $this->handleIndent(2) . "\$this->" . $variable->getRawName() . " ='';" . $this->newlineCharacter;
+                }
 
-        if ($this->isConstructor()) {
-            $code .= $this->handleIndent(1) . "public function __construct(){" . $this->newlineCharacter;
-
-            foreach ($listOfVariables as $variable) {
-                $code .= $this->handleIndent(2) . "\$this->" . $variable->getRawName() . " ='';" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
             }
 
-            $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
-        }
-
-        foreach ($listOfVariables as $variable) {
-            $code .= $this->newlineCharacter;
-            //write get
-            $code .= $this->handleIndent(1) . "public function " . $this->handleFunctionName(self::TYPE_GET, $variable) . "() {" . $this->newlineCharacter;
-            $code .= $this->handleIndent(2) . "return \$this->" . $variable->getRawName() . ";" . $this->newlineCharacter;
-            $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
-
-            $code .= $this->newlineCharacter;
-            //write set
-            $code .= $this->handleIndent(1) . "public function " . $this->handleFunctionName(self::TYPE_SET, $variable) . "($" . $variable->getRawName() . ") {" . $this->newlineCharacter;
-            $code .= $this->handleIndent(2) . "\$this->" . $variable->getRawName() . " = $" . $variable->getRawName() . ";" . $this->newlineCharacter;
-            $code .= $this->handleIndent(1) . "}". $this->newlineCharacter;
-        }
-
-        if ($this->isToArray()) {
-            $code .= $this->newlineCharacter;
-
-            //toArray
-            $code .= $this->handleIndent(1) . "public function toArray(){" . $this->newlineCharacter;
-            $code .= $this->handleIndent(2) . "\$arr = array();" . $this->newlineCharacter;
             foreach ($listOfVariables as $variable) {
-                $code .= $this->handleIndent(2) . "if(!empty(\$this->" . $variable->getRawName() . ")){" . $this->newlineCharacter;
-                $code .= $this->handleIndent(3) . "\$arr['" . $variable->getRawName() . "'] = \$this->" . $variable->getRawName() . ";" . $this->newlineCharacter;
-                $code .= $this->handleIndent(2) . "} else {" . $this->newlineCharacter;
-                $code .= $this->handleIndent(3) . "\$arr['" . $variable->getRawName() . "'] = '';" . $this->newlineCharacter;
+                $code .= $this->newlineCharacter;
+                //write get
+                $code .= $this->handleIndent(1) . "public function " . $this->handleFunctionName(self::TYPE_GET, $variable) . "() {" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "return \$this->" . $variable->getRawName() . ";" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
+
+                $code .= $this->newlineCharacter;
+                //write set
+                $code .= $this->handleIndent(1) . "public function " . $this->handleFunctionName(self::TYPE_SET, $variable) . "($" . $variable->getRawName() . ") {" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "\$this->" . $variable->getRawName() . " = $" . $variable->getRawName() . ";" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
+            }
+
+            if($this->isClone()){
+                $code .= $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "public function clone(){" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "\$result = new MyNewClass();" . $this->newlineCharacter;
+                foreach($listOfVariables as $variable){
+                    $code .= $this->handleIndent(2) . "\$result->".$this->handleFunctionName(self::TYPE_SET, $variable)."(\$this->".$variable->getRawName().");" .$this->newlineCharacter;
+                }
+                $code .= $this->handleIndent(2) . "return \$result;" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
+            }
+
+            if ($this->isToArray()) {
+                $code .= $this->newlineCharacter;
+
+                //toArray
+                $code .= $this->handleIndent(1) . "public function toArray(){" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "\$arr = array();" . $this->newlineCharacter;
+                foreach ($listOfVariables as $variable) {
+                    $code .= $this->handleIndent(2) . "if(!empty(\$this->" . $variable->getRawName() . ")){" . $this->newlineCharacter;
+                    $code .= $this->handleIndent(3) . "\$arr['" . $variable->getRawName() . "'] = \$this->" . $variable->getRawName() . ";" . $this->newlineCharacter;
+                    $code .= $this->handleIndent(2) . "} else {" . $this->newlineCharacter;
+                    $code .= $this->handleIndent(3) . "\$arr['" . $variable->getRawName() . "'] = '';" . $this->newlineCharacter;
+                    $code .= $this->handleIndent(2) . "}" . $this->newlineCharacter;
+                }
+                $code .= $this->handleIndent(2) . "return \$arr;" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
+
+                $code .= $this->newlineCharacter;
+
+                //static toHeaderArray
+                $code .= $this->handleIndent(1) . "public static function toHeaderArray(){" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "\$arr = array();" . $this->newlineCharacter;
+                foreach ($listOfVariables as $variable) {
+                    $code .= $this->handleIndent(2) . "array_push(\$arr, '" . $variable->getRawName() . "');" . $this->newlineCharacter;
+                }
+                $code .= $this->handleIndent(2) . "return \$arr;" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
+            }
+
+            if($this->isConvertJson()){
+                $code .= $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "public static function convertFromJson(\$json){" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "\$result=null;" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "if(!empty(\$json)){" . $this->newlineCharacter;
+                $code .= $this->handleIndent(3) . "\$result = new MyNewClass();" . $this->newlineCharacter;
+                foreach($listOfVariables as $variable){
+                    $code .= $this->handleIndent(3) . "if(array_key_exists('".$variable->getRawName()."', \$json){". $this->newlineCharacter;
+                    $code .= $this->handleIndent(4) . "\$result->".$this->handleFunctionName(self::TYPE_SET, $variable)."(\$json['".$variable->getRawName()."']);" .$this->newlineCharacter;
+                    $code .= $this->handleIndent(3)."}". $this->newlineCharacter;
+                }
                 $code .= $this->handleIndent(2) . "}" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "return \$result;" . $this->newlineCharacter;
+                $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
             }
-            $code .= $this->handleIndent(2) . "return \$arr;" . $this->newlineCharacter;
-            $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
-
-            $code .= $this->newlineCharacter;
-
-            //static toHeaderArray
-            $code .= $this->handleIndent(1) . "public static function toHeaderArray(){". $this->newlineCharacter;
-            $code .= $this->handleIndent(2) . "\$arr = array();" . $this->newlineCharacter;
-            foreach ($listOfVariables as $variable) {
-                $code .= $this->handleIndent(2) . "array_push(\$arr, '" . $variable->getRawName() . "');" . $this->newlineCharacter;
-            }
-            $code .= $this->handleIndent(2) . "return \$arr;" . $this->newlineCharacter;
-            $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
-        }
         }
 
         return $code;
