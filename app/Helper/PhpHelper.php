@@ -268,7 +268,7 @@ class PhpHelper
                 $code .= $this->handleIndent(2) . "if(!empty(\$json)){" . $this->newlineCharacter;
                 $code .= $this->handleIndent(3) . "\$result = new MyNewClass();" . $this->newlineCharacter;
                 foreach($listOfVariables as $variable){
-                    $code .= $this->handleIndent(3) . "if(array_key_exists('".$variable->getRawName()."', \$json){". $this->newlineCharacter;
+                    $code .= $this->handleIndent(3) . "if(array_key_exists('".$variable->getRawName()."', \$json)){". $this->newlineCharacter;
                     $code .= $this->handleIndent(4) . "\$result->".$this->handleFunctionName(self::TYPE_SET, $variable)."(\$json['".$variable->getRawName()."']);" .$this->newlineCharacter;
                     $code .= $this->handleIndent(3)."}". $this->newlineCharacter;
                 }
