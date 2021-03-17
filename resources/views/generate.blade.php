@@ -50,9 +50,9 @@
 
                             <div class="col-span-6 sm:col-span-4">
                                 <x-form-group>
-                                    <x-form-checkbox name="is_constructor" label="Generate Constructor"/>
-                                    <x-form-checkbox name="is_toarray" label="Generate ToArray"/>
-                                    <x-form-checkbox name="is_pascalcase" label="Force PascalCase on Functions"/>
+                                    <x-form-checkbox name="is_constructor" label="Generate Constructor" default/>
+                                    <x-form-checkbox name="is_toarray" label="Generate ToArray"  default/>
+                                    <x-form-checkbox name="is_pascalcase" label="Force PascalCase on Functions" default/>
                                 </x-form-group>
                             </div>
                             <div class="col-span-6 sm:col-span-6">

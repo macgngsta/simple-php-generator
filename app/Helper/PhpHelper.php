@@ -183,7 +183,7 @@ class PhpHelper
             $code .= $this->handleIndent(1) . "public function __construct(){" . $this->newlineCharacter;
 
             foreach ($listOfVariables as $variable) {
-                $code .= $this->handleIndent(2) . "\$this->" . $variable->getRawName() . " =''" . $this->newlineCharacter;
+                $code .= $this->handleIndent(2) . "\$this->" . $variable->getRawName() . " ='';" . $this->newlineCharacter;
             }
 
             $code .= $this->handleIndent(1) . "}" . $this->newlineCharacter;
